@@ -15,10 +15,9 @@ import os, sys
 from psychopy import visual, core, event, gui, logging, event
 
 # open a white full screen window
-win = visual.Window(size =(1000, 600), fullscr=False, allowGUI=True, color='white', unit='height') 
+win = visual.Window(size=(1000, 600), fullscr=False, allowGUI=True, color='white', unit='height') 
 
-# uncomment if you use a clock. Optional because we didn't cover timing this week, 
-# but you can find examples in the tutorial code 
+# Create the clocks
 trialClock = core.Clock()
 stimClock = core.Clock()
 
@@ -27,22 +26,20 @@ def exit_experiment():
     print(response)
     win.close()
     core.quit()
-
 event.globalKeys.add(key='escape', func=exit_experiment)
 
 
 
-# make a list or a pd.DataFrame that contains trial-specific info (stimulus, etc)
-# e.g. stim = ['1.jpg','2.jpg','3.jpg']
+# Import the info of the stimuli as a DataFrame, and shuffle them
 stimuli = pd.read_table('experiment.csv', sep=',')
 stimuli = stimuli.sample(frac=1)
 stimuli = stimuli.reset_index(drop=True)
 
-
+# Create a DataFrame to store info of responses
 response = pd.DataFrame(columns=['response','time','correct'])
 
-# Other visual things
 
+# Create other ther visual things
 correctResponse = visual.TextStim(win, text = "Correct!", color = 'black')
 wrongResponse = visual.TextStim(win, text = "Wrong", color = 'black')
 instructionText = visual.TextStim(win, text = "If the colour of the word \
@@ -52,12 +49,13 @@ instructionText = visual.TextStim(win, text = "If the colour of the word \
                                   color='black')
 background = visual.Rect(win, width=1.6, height=1.5, fillColor="grey")
 
-
+# Experiment Instruction
 background.draw()
 instructionText.draw()
 win.flip()
 event.waitKeys()
-# make your loop
+
+# Experiment Trials
 for i in range(len(stimuli)):
     stimulus = visual.TextStim(win, text=stimuli['text'][i], color=stimuli['colour'][i])
     trialClock.reset()
@@ -65,7 +63,7 @@ for i in range(len(stimuli)):
     win.flip()
     while trialClock.getTime() < 1:
         core.wait(0.001)
-        
+# Show the stimulus
     stimClock.reset()
     while stimClock.getTime() < 0.05:
         background.draw()
@@ -73,9 +71,9 @@ for i in range(len(stimuli)):
         win.flip()
     background.draw()
     win.flip() 
-    
+# Get the response
     keyresponse = event.waitKeys(keyList = ['y', 'n'], timeStamped=stimClock)
-    
+# Determine whether the response is correct, and store it
     if keyresponse[0][0] == stimuli['cor_response'][i]:
         response = response.append({'response':keyresponse[0][0],'time':keyresponse[0][1],'correct':True}, ignore_index=True)
         background.draw()
@@ -89,13 +87,11 @@ for i in range(len(stimuli)):
         win.flip()
         core.wait(2)
 
-    # if you're recording responses, be sure to store your responses in a list
-    # or DataFrame which also uses your iterater!
-
+# Print out the responses
+print(response)
 
 #%% Required clean up
 # this cell will make sure that your window displays for a while and then 
 # closes properly
-print(response)
 core.wait(2)
 win.close()
